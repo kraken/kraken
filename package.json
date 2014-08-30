@@ -1,0 +1,37 @@
+{
+  "name": "kraken",
+  "productName": "kraken",
+  "version": "0.1.0",
+  "description": "A hackable in-memory graph database that runs in node and the browser",
+  "main": "./src/kraken.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kraken/kraken.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kraken/kraken/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/kraken/kraken/blob/master/LICENSE"
+    }
+  ],
+  "scripts": {
+    "test": "mocha --ui tdd --reporter dot 'test/**/*-test.js'"
+  },
+  "devDependencies": {
+    "gulp": "^3.6.2",
+    "gulp-browserify": "~0.5.0",
+    "mocha": "~1.20.0"
+  },
+  "dependencies": {
+    "collections": "~1.2.1",
+    "delegates": "0.0.3",
+    "extend": "^1.2.1",
+    "is": "^0.3.0",
+    "lazy.js": "^0.3.2",
+    "mathjs": "^0.22.0",
+    "node-uuid": "^1.4.1"
+  }
+}
