@@ -96,10 +96,10 @@ Node.prototype.reachEfficiency = function() {
   return this.reach(2) / this.size();
 }
 
-// Uses a modified approach to calculating closeness that works with
-// disconnected graphs. Cloneness is defined as the sum of inversed distances
-// to all other nodes.
+// Calculate the harmonic closeness, defined as the sum of the inverted
+// distances to all other nodes.
 //
+// http://www.academia.edu/3687032/Closeness_Centrality_Extended_To_Unconnected_Graphs_The_Harmonic_Centrality_Index
 // http://toreopsahl.com/2010/03/20/closeness-centrality-in-networks-with-disconnected-components/
 Node.prototype.closeness = function() {
   var self = this;
@@ -115,7 +115,8 @@ Node.prototype.closeness = function() {
   });
 
   // normalize values between 0 and 1
-  // NOTE: This will not work for edge weights other than 1
+  // NOTE: This will not work for edge weights other than 1.
+  // For that we need to sum all (positive) edge weights.
   closeness = closeness / (graph.order() - 1);
 
   return closeness;

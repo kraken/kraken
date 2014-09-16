@@ -14,27 +14,24 @@ function Dijkstra(graph, source, shortest) {
 
   graph.nodes().each(function(target) {
     shortest.distance(source, target, Infinity);
-    queue.push(target);
   });
 
   shortest.distance(source, source, 0);
+  queue.push(source);
 
   var u;
   while ( (u = queue.pop()) ) {
     u.outEdges().forEach(function(edge) {
       var v = edge.target();
+      var distance = shortest.distance(source, u) + edge.weight();
 
-      if (queue.indexOf(v) != -1) {
-        var distance = shortest.distance(source, u) + edge.weight();
+      if (distance < shortest.distance(source, v)) {
+        shortest.distance(source, v, distance);
+        shortest.previous(source, v, u);
 
-        if (shortest.distance(source, v) > distance) {
-          shortest.distance(source, v, distance);
-          shortest.previous(source, v, u);
-
-          // TODO: Is there a faster way to trigger a re-sort?
-          queue.delete(v);
-          queue.push(v);
-        }
+        // TODO: Is there a faster way to trigger a re-sort?
+        queue.delete(v);
+        queue.push(v);
       }
     });
   }

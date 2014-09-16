@@ -18,7 +18,7 @@ suite("metrics", function() {
     assert.equal(graph.get("a").closeness().toFixed(3), 0.417);
     assert.equal(graph.get("b").closeness().toFixed(3), 0.367);
     assert.equal(graph.get("c").closeness().toFixed(3), 0.300);
-    assert.equal(graph.get("d").closeness().toFixed(3), 0);
+    assert.equal(graph.get("d").closeness().toFixed(3), 0.2);
     assert.equal(graph.get("e").closeness().toFixed(3), 0);
     assert.equal(graph.get("f").closeness().toFixed(3), 0);
   });

@@ -129,33 +129,36 @@ Kraken.register("format", "JSON", require("./plugins/formats/json"));
 // Kraken.register("graph:degree")
 
 // Require core metrics
-[
-  "size",
-  "ties",
-  "pairs",
-  "density",
-  "degree",
-  "indegree",
-  "outdegree",
-  "farness",
-  "closeness"
-].forEach(registerSimpleMetric);
-
-function registerSimpleMetric(metric) {
-  console.log("registering metric", metric);
-
-  Kraken.metrics[metric] = function(resolve, options) {
-    this.eachNode(function(node) {
-      resolve(node, node[metric].call(node));
-    });
-  }
-}
-
+Kraken.metrics["size"]        = delegateMetricToMethod("size");
+Kraken.metrics["ties"]        = delegateMetricToMethod("ties");
+Kraken.metrics["pairs"]       = delegateMetricToMethod("pairs");
+Kraken.metrics["density"]     = delegateMetricToMethod("density");
+Kraken.metrics["degree"]      = delegateMetricToMethod("degree");
+Kraken.metrics["indegree"]    = delegateMetricToMethod("indegree");
+Kraken.metrics["outdegree"]   = delegateMetricToMethod("outdegree");
+Kraken.metrics["farness"]     = delegateMetricToMethod("farness");
+Kraken.metrics["closeness"]   = delegateMetricToMethod("closeness");
 Kraken.metrics["betweenness"] = require("./plugins/metrics/betweenness");
-
-Kraken.metrics["reach"]       = require("./plugins/metrics/reach")(1);
+Kraken.metrics["reach"]       = require("./plugins/metrics/reach")(2);
 Kraken.metrics["reach1"]      = require("./plugins/metrics/reach")(1);
 Kraken.metrics["reach2"]      = require("./plugins/metrics/reach")(2);
 Kraken.metrics["reach3"]      = require("./plugins/metrics/reach")(3);
+Kraken.metrics["reach-efficiency"] = delegateMetricToMethod("reachEfficiency")
+
+function delegateMetricToMethod(methodName) {
+  var fn = function(resolve, options) {
+    this.eachNode(function(node) {
+      var method = node[methodName];
+      resolve(node, method.call(node));
+    });
+  };
+
+  // allow progress to be calculated automatically
+  fn.total = function() {
+    return this.graph.order(); // number of nodes
+  }
+
+  return fn;
+}
 
 module.exports = Kraken;

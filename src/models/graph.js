@@ -3,6 +3,7 @@ var is = require("is");
 var assert = require("assert");
 var delegate = require("delegates");
 var utils = require("../utils");
+var events = require("events");
 var Node = require("./node");
 var Edge = require("./edge");
 var GraphIndex = require("../index/graph_index");
@@ -37,6 +38,7 @@ var Brandes = require("../algorithms/brandes");
 // TODO: Does it make more sense to store adjacency centrally on the graph
 // or separately on each node?
 function Graph(data) {
+  this.events = new events.EventEmitter();
   this.index = new GraphIndex(this);
   this.options = {
     directed: true,
@@ -239,9 +241,9 @@ Graph.prototype.shortestPaths = function() {
 }
 
 // TODO: Cache
-Graph.prototype.betweenness = function() {
+Graph.prototype.betweenness = function(options) {
   // return this.cache.betweenness || this.calculateBetweenness();
-  return Brandes(this);
+  return Brandes(this, options);
 }
 
 // Undirected: (N * (N-1)) / 2
@@ -251,6 +253,17 @@ Graph.prototype.betweenness = function() {
 //   N*(N-1) is number of edges in directed graph. Number of edge in undirected graph is
 // }
 
+
+// Behave as an event emitter
+delegate(Graph.prototype, "events")
+  .method("addListener")
+  .method("on")
+  .method("once")
+  .method("removeListener")
+  .method("removeAllListeners")
+  .method("setMaxListeners")
+  .method("listeners")
+  .method("emit")
 
 // Only methods that require an intimate knowledge of the inner workings of
 // the index should be delegated.  All others should be defined by the graph

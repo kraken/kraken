@@ -1,21 +1,31 @@
+var extend = require("extend");
 var ShortestPathTree = require("../models/shortest-path-tree");
 var Heap = require("collections/heap");
 var FastMap = require("collections/fast-map");
+var progrez = require("../lib/progrez");
 
-function Brandes(graph) {
-  var options = {normalize: true, endpoints: false, k: Infinity};
+function Brandes(graph, options) {
   var result = new FastMap();
+  var nodes = graph.nodes();
+  var defaults = {normalize: true, endpoints: false, k: Infinity};
+
+  options = extend(defaults, options);
 
   // if (graph.multi()) {
   //   graph = branderize(graph.clone());
   // }
 
-  graph.nodes().each(function(source) {
+  var progress = progrez()
+    .total(nodes.count())
+    .callback(options && options.progress);
+
+  nodes.each(function(source) {
     result.set(source, 0);
   });
 
-  graph.nodes().each(function(source) {
+  nodes.each(function(source) {
     compute(source, graph, options, result);
+    progress.inc();
   });
 
   if (options.normalize) normalize(graph, result);

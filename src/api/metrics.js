@@ -2,6 +2,8 @@ var is = require("is");
 var assert = require("assert");
 var math = require("mathjs")();
 var Metrics = require("../static").metrics;
+var progrez = require("../lib/progrez");
+
 // var exports = module.exports = {};
 
 
@@ -52,10 +54,24 @@ exports.calc = function(property, expression) {
   }
 
   // Metrics should use the resolve callback to resolve the computed
-  // value for each component.
+  // value for each component. Progress is tracked automatically.
+  var graph = this.graph;
+  var progress = progrez()
+    .callback(function(value) {
+      graph.emit("progress", value, property);
+    });
+
+  if (callback.total) {
+    var total = callback.total.call(this);
+    progress.total(total);
+  }
+
   var resolve = function(component, value) {
     component.prop(property, value);
+    if (progress.auto()) progress.inc();
   }
+
+  resolve.progress = function(value) { progress.set(value); };
 
   // TODO: Should we pass the graph / selection explicitly here instead?
   callback.call(this, resolve, options);
