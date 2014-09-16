@@ -17,17 +17,17 @@ suite("metrics", function() {
     var b = graph.get("b");
     var c = graph.get("c");
 
-    assert.equal(a.reach(0), 0);
-    assert.equal(a.reach(1), 1/3);
+    assert.equal(a.reach(0), 1/4);
+    assert.equal(a.reach(1), 1/2);
     assert.equal(a.reach(2), 1);
     assert.equal(a.reach(), a.reach(2)); // defaults to two-step reach
     assert.equal(b.reach(), 1);
-    assert.equal(c.reach(), 0);
+    assert.equal(c.reach(), 1/4);
   });
 
   test("#reach() disconnected", function() {
-    var graph = Kraken().add("a");
-    assert.equal(graph.get("a").reach(), 0);
-    assert.equal(graph.get("a").reach(3), 0);
+    var graph = Kraken().add("a").add("b");
+    assert.equal(graph.get("a").reach(), 0.5);
+    assert.equal(graph.get("a").reach(3), 0.5);
   });
 });

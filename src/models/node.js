@@ -57,39 +57,25 @@ Node.prototype.density = function() {
 }
 
 // Defaults to two-step reach if distance undefined
-Node.prototype.reach = function(distance, visited) {
-  if (distance === 0) return 0;
+Node.prototype.reach = function(distance, reached) {
+  if (reached) {
+    reached.add(this);
 
-  var reach = 0;
-  var self = this;
-  var adjust = !visited;
-
-  // Default to two-step reach
-  distance = distance || 2;
-
-  visited = visited || new Set();
-  visited.add(self);
-
-  this.edges().forEach(function(edge) {
-    var target = edge.target();
-
-    if (target !== self && !visited.has(target)) {
-      visited.add(target);
-      reach += 1 + target.reach(distance - 1, visited);
+    if (distance > 0) {
+      this.outEdges().forEach(function(edge) {
+        edge.target().reach(distance - 1, reached);
+      });
     }
-  });
+  } else {
+    // Default to two-step reach
+    if (arguments.length === 0) distance = 2;
 
-  if (adjust) {
-    var order = this.graph.order();
+    reached = new Set();
+    this.reach(distance, reached);
 
-    if (order > 1) {
-      reach = reach / (order - 1);
-    } else {
-      reach = 0;
-    }
+    // Percentage of the total network
+    return reached.length / this.graph.order();
   }
-
-  return reach;
 }
 
 Node.prototype.reachEfficiency = function() {
