@@ -1,6 +1,7 @@
 var Kraken = require("../kraken");
 
 var map = [].map;
+var filter = [].filter;
 var slice = [].slice;
 var forEach = [].forEach;
 
@@ -74,8 +75,25 @@ var core = module.exports = {
     return this;
   },
 
+  nodes: function() {
+    return filter.call(this, function(component) {
+      return component.node;
+    });
+  },
+
+  edges: function() {
+    return filter.call(this, function(component) {
+      return component.edge;
+    });
+  },
+
   map: function(callback, context) {
     var result = map.call(this, callback, context);
+    return this.pushStack(result);
+  },
+
+  filter: function(callback, context) {
+    var result = filter.call(this, callback, context);
     return this.pushStack(result);
   },
 
