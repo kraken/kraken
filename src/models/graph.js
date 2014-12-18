@@ -134,6 +134,10 @@ Graph.prototype.add = function(node) {
 // Public: Adds edge between source and target with the given properties.
 Graph.prototype.connect = function(sourceID, targetID, edge) {
   this.addEdge(sourceID, targetID, edge);
+
+  // TODO: not sure if this is the right way to handle undirected graphs
+  if (!this.options.directed) this.addEdge(targetID, sourceID, edge);
+
   return this;
 };
 
