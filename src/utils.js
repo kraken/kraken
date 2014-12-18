@@ -1,4 +1,5 @@
 var is = require("is");
+var cuid = require("cuid");
 
 // Use this to turn arguments into an array when a method can accept a
 // single item, multiple items, or array of items.
@@ -21,6 +22,11 @@ exports.transfer = function(source, target) {
 
   return target;
 }
+
+// Collision-resistant ids optimized for horizontal scaling and sequential
+// lookup performance.  Most uuid generators rely on `window.crypto` which
+// isn't available to web workers (outside of chrome).
+exports.uuid = cuid;
 
 // Usage:
 // var nextID = require("utils").id;

@@ -1,4 +1,4 @@
-var uuid = require("node-uuid").v4;
+var uuid = require("../utils").uuid;
 var FastMap = require("collections/fast-map");
 var Dijkstra = require("./dijkstra");
 var BellmanFord = require("./bellman-ford");
