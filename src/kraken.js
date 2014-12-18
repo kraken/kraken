@@ -139,6 +139,7 @@ Kraken.metrics["outdegree"]   = delegateMetricToMethod("outdegree");
 Kraken.metrics["farness"]     = delegateMetricToMethod("farness");
 Kraken.metrics["closeness"]   = delegateMetricToMethod("closeness");
 Kraken.metrics["betweenness"] = require("./plugins/metrics/betweenness");
+Kraken.metrics["eigenvector"] = require("./plugins/metrics/eigenvector");
 Kraken.metrics["reach"]       = require("./plugins/metrics/reach")(2);
 Kraken.metrics["reach1"]      = require("./plugins/metrics/reach")(1);
 Kraken.metrics["reach2"]      = require("./plugins/metrics/reach")(2);
