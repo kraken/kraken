@@ -36,6 +36,7 @@ Kraken was inspired by many existing graph databases:
 - [cayley](https://github.com/google/cayley)
 - [graphd](http://dl.acm.org/citation.cfm?id=1807283)
 - [mapgraph](http://mapgraph.io/)
+- [cytoscape](http://cytoscape.github.io/cytoscape.js/index.html)
 
 ## Architecture
 
