@@ -1,6 +1,6 @@
 var is = require("is");
 var assert = require("assert");
-var math = require("mathjs")();
+var math = require("mathjs");
 var Metrics = require("../static").metrics;
 var progrez = require("../lib/progrez");
 
