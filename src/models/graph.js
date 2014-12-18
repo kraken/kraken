@@ -72,6 +72,10 @@ Graph.prototype.directed = function(directed) {
   return this.option("directed", directed !== false)
 }
 
+Graph.prototype.undirected = function() {
+  return this.option("directed", false);
+}
+
 Graph.prototype.weighted = function(weighted) {
   return this.option("weighted", weighted !== false)
 }
