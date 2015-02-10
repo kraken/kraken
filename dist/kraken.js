@@ -31924,6 +31924,7 @@ delegateGetter("farness");
 
 // TODO: Make all calculations async
 // graph.calc("degree").then(function(result) { ... })
+// graph.calc("size", {weighted: true}).then(...)
 // graph.calc("rank", "a / b").then(...)
 // graph.calc("rank", fn).then(...)
 //
@@ -31942,7 +31943,15 @@ exports.calc = function(property, expression) {
 
     if (is.object(expression)) {
       options = expression;
-      property = expression.as;
+
+      // TODO: Do we really want to support this?
+      //
+      //   calc("a / b", {as: "prop"})
+      //
+      // already have
+      //
+      //   calc("prop", "a / b")
+      if (expression.as) property = expression.as;
     }
 
     callback = Metrics[metric];
@@ -32182,16 +32191,17 @@ var proto = module.exports = {
 };
 
 },{}],319:[function(require,module,exports){
-// TODO: rewrite this with reduce once we added it.
 // Not sure where else to put this stuff yet so for now I'm just trying to
 // keep it out of the core.
 var GraphHelper = {
-  sumEdgeWeights: function(edges) {
-    var sum = 0;
-    edges.forEach(function(edge) {
-      sum += edge.weight();
-    });
-    return sum;
+  weight: function(collection) {
+    return GraphHelper.sum(collection, "weight");
+  },
+
+  sum: function(collection, method) {
+    return collection.reduce(function(total, model) {
+      return total + model[method].call(model);
+    }, 0);
   }
 }
 
@@ -32345,6 +32355,10 @@ EdgeSet.prototype.forEach = function(fn, context) {
   return this.edges.forEach(fn, context);
 };
 
+EdgeSet.prototype.reduce = function() {
+  return this.edges.reduce.apply(this.edges, arguments);
+};
+
 module.exports = EdgeIndex;
 
 },{}],322:[function(require,module,exports){
@@ -32372,8 +32386,21 @@ function Index(graph) {
   this._size = 0;  // number of edges
 }
 
-Index.prototype.order = function() { return this._order; }
-Index.prototype.size = function() { return this._size; }
+Index.prototype.order = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.sum(this.collections.nodes, "weight");
+  } else {
+    return this._order;
+  }
+}
+
+Index.prototype.size = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.sum(this.collections.edges, "weight");
+  } else {
+    return this._size;
+  }
+}
 
 Index.prototype.addNode = function(node) {
   assert(!this.contains(node), "Node already exists, " + node);
@@ -32486,15 +32513,15 @@ Index.prototype.getOutEdgeCountFor = function(node) {
 }
 
 Index.prototype.getWeightedEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.all(node));
+  return GraphHelper.sum(this.edges.all(node), "weight");
 }
 
 Index.prototype.getWeightedInEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.to(node));
+  return GraphHelper.sum(this.edges.to(node), "weight");
 }
 
 Index.prototype.getWeightedOutEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.from(node));
+  return GraphHelper.sum(this.edges.from(node), "weight");
 }
 
 Index.prototype.getNeighbors = function(node) {
@@ -32706,10 +32733,13 @@ Kraken.metrics["reach3"]      = require("./plugins/metrics/reach")(3);
 Kraken.metrics["reach-efficiency"] = delegateMetricToMethod("reachEfficiency")
 
 function delegateMetricToMethod(methodName) {
-  var fn = function(resolve, options) {
+  var fn = function(resolve) {
+    var args = Array.prototype.slice.call(arguments);
+    args.shift(); // remove resolve from args
+
     this.eachNode(function(node) {
       var method = node[methodName];
-      resolve(node, method.call(node));
+      resolve(node, method.apply(node, args));
     });
   };
 
@@ -32800,31 +32830,14 @@ Edge.prototype.rebase = function(source, target) {
   return this.graph.rebaseEdge(this, source, target);
 }
 
-// Returns the assigned edge weight or 1 if undefined.
-//
-// TODO: This approach violates the principle of least surprise.
-// Might want to handle this on a case-by-case basis for each algorithm
-// or set as default properties instead.
-//
-// TODO: Consider alternative graph.weight("prop") that can be used to set the
-// property used for edge weights. This method would take that setting into
-// account when determining edge weight.
-Edge.prototype.weight = function(value) {
-  if (arguments.length === 0) {
-    return this.get("weight", 1);
-  } else {
-    return this.set("weight", value);
-  }
-}
-
 // Returns the assigned edge multiplicity or 1 if undefined.
-Edge.prototype.multiplicity = function(value) {
-  if (arguments.length === 0) {
-    return this.get("multiplicity", 1);
-  } else {
-    return this.set("multiplicity", value);
-  }
-}
+// Edge.prototype.multiplicity = function(value) {
+//   if (arguments.length === 0) {
+//     return this.get("multiplicity", 1);
+//   } else {
+//     return this.set("multiplicity", value);
+//   }
+// }
 
 module.exports = Edge;
 
@@ -32887,14 +32900,23 @@ Entity.prototype.prop = function(property, value) {
                                   this.set(property, value);
 }
 
-propertyAccessor("weight");
+// Returns the assigned edge weight or 1 if undefined.
+//
+// TODO: This approach violates the principle of least surprise.
+// Might want to handle this on a case-by-case basis for each algorithm
+// or set as default properties instead.
+//
+// TODO: Consider alternative graph.weight("prop") that can be used to set the
+// property used for edge weights. This method would take that setting into
+// account when determining edge weight.
+propertyAccessor("weight", 1);
 
-function propertyAccessor(prop) {
+function propertyAccessor(prop, defaultValue) {
   Entity.prototype[prop] = function(value) {
     if (arguments.length === 0) {
-      return this.prop(prop);
+      return this.get(prop, defaultValue);
     } else {
-      return this.prop(prop, value);
+      return this.set(prop, value);
     }
   }
 }
@@ -32918,6 +32940,7 @@ var Brandes = require("../algorithms/brandes");
 //
 // API
 //  add({node_properties})
+//  add(id, {node_properties})
 //  connect({edge_properties})
 //  insert(node|edge)
 //  remove(node|edge)
@@ -33024,11 +33047,15 @@ Graph.prototype.eid = function(source, target, properties) {
 
 // Public: Adds the node to the graph.
 // Can be called with single node definition or array of node definitions.
-Graph.prototype.add = function(node) {
+Graph.prototype.add = function(node, properties) {
   if (is.array(node)) {
     var nodes = node;
     for (node in nodes) this.addNode(node);
   } else {
+    if (properties) {
+      properties.id = node;
+      node = properties;
+    }
     this.addNode(node);
   }
 
@@ -33211,9 +33238,11 @@ delegate(Graph.prototype, "index")
 module.exports = Graph;
 
 },{"../algorithms/brandes":311,"../index/graph_index":322,"../utils":339,"./edge":325,"./node":328,"assert":340,"collections/set":15,"delegates":23,"events":357,"is":25}],328:[function(require,module,exports){
+var is = require("is");
 var Set = require("collections/set");
 var Entity = require("./entity");
 var Dijkstra = require("../algorithms/dijkstra");
+var GraphHelper = require("../helpers/graph-helper");
 
 function Node(graph, properties) {
   Entity.call(this, graph, properties);
@@ -33235,8 +33264,9 @@ Node.prototype.connect = function(target, edge) {
 }
 
 // Neighborhood size
-// Returns the number of nodes connected to node plus the node itself
-Node.prototype.size = function() {
+// Returns the number of nodes connected to node plus the node itself.
+// Can be weighted.
+Node.prototype.size = function(options) {
   var nodes = new Set();
 
   this.edges().forEach(function(edge) {
@@ -33246,15 +33276,24 @@ Node.prototype.size = function() {
 
   nodes.add(this);
 
-  return nodes.length;
+  if (options && options.weighted) {
+    return GraphHelper.weight(nodes);
+  } else {
+    return nodes.length;
+  }
 }
 
 // TODO: insize/outsize
 
 // Neighborhood ties
-// Returns the number of edges for the node
-Node.prototype.ties = function() {
-  return this.graph.getEdgeCountFor(this);
+// Returns the number of edges for the node.
+// Can be weighted.
+Node.prototype.ties = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.weight(this.edges());
+  } else {
+    return this.graph.getEdgeCountFor(this);
+  }
 }
 
 // Neighborhood pairs
@@ -33270,29 +33309,78 @@ Node.prototype.density = function() {
 }
 
 // Defaults to two-step reach if distance undefined
-Node.prototype.reach = function(distance, reached) {
+// reach(1)
+// reach(1, {nodeWeighted: true})
+// reach(1, {edgeWeighted: true})
+// reach({nodeWeighted: true}) // defaults to two-step
+Node.prototype.reach = function(distance, options, reached) {
+  if (is.object(distance)) {
+    reached = options;
+    options = distance;
+    distance = undefined;
+  }
+
   if (reached) {
-    reached.add(this);
+    reached.nodes.add(this);
 
     if (distance > 0) {
       this.outEdges().forEach(function(edge) {
-        edge.target().reach(distance - 1, reached);
+        reached.edges.add(edge);
+        edge.target().reach(distance - 1, options, reached);
       });
     }
   } else {
-    // Default to two-step reach
-    if (arguments.length === 0) distance = 2;
+    var reach, total;
 
-    reached = new Set();
-    this.reach(distance, reached);
+    // Default to two-step reach
+    if (!is.number(distance)) distance = 2;
+
+    options = options || {};
+
+    reached = {
+      nodes: new Set(),
+      edges: new Set()
+    }
+
+    this.reach(distance, options, reached);
 
     // Percentage of the total network
-    return reached.length / this.graph.order();
+    if (options.nodeWeighted) {
+      reach = GraphHelper.weight(reached.nodes);
+      total = this.graph.order({weighted: true});
+    } else if (options.edgeWeighted) {
+      reach = GraphHelper.weight(reached.edges);
+      total = this.graph.size({weighted: true});
+    } else {
+      reach = reached.nodes.length;
+      total = this.graph.order();
+    }
+
+    return reach / total;
   }
 }
 
-Node.prototype.reachEfficiency = function() {
-  return this.reach(2) / this.size();
+Node.prototype.reachEfficiency = function(distance, options) {
+  var reach, total;
+
+  options = options || {};
+
+  if (is.object(distance)) {
+    options = distance;
+    distance = undefined;
+  }
+
+  reach = this.reach(distance, options);
+
+  if (options.nodeWeighted) {
+    total = this.size({weighted: true});
+  } else if (options.edgeWeighted) {
+    total = this.ties({weighted: true});
+  } else {
+    total = this.size();
+  }
+
+  return reach / total;
 }
 
 // Calculate the harmonic closeness, defined as the sum of the inverted
@@ -33424,7 +33512,7 @@ Node.prototype.out = Node.prototype.outEdges;
 
 module.exports = Node;
 
-},{"../algorithms/dijkstra":312,"./entity":326,"collections/set":15}],329:[function(require,module,exports){
+},{"../algorithms/dijkstra":312,"../helpers/graph-helper":319,"./entity":326,"collections/set":15,"is":25}],329:[function(require,module,exports){
 var FastMap = require("collections/fast-map");
 
 function ShortestPathTree() {
