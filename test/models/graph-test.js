@@ -3,6 +3,38 @@ var assert = require("assert");
 var Kraken = require("../kraken");
 
 suite("Graph", function() {
+  test("#order", function() {
+    var graph = Kraken.graph()
+      .add({id: "a"})
+      .add({id: "b", weight: 2});
+    assert.equal(graph.order(), 2);
+  })
+
+  test("#order weighted", function() {
+    var graph = Kraken.graph()
+      .add({id: "a"})
+      .add({id: "b", weight: 2});
+    assert.equal(graph.order({weighted: true}), 3);
+  })
+
+  test("#size", function() {
+    var graph = Kraken.graph()
+      .add({id: "a"})
+      .add({id: "b"})
+      .connect("a", "b")
+      .connect("b", "a", {weight: 2});
+    assert.equal(graph.size(), 2);
+  })
+
+  test("#size weighted", function() {
+    var graph = Kraken.graph()
+      .add({id: "a"})
+      .add({id: "b"})
+      .connect("a", "b")
+      .connect("b", "a", {weight: 2});
+    assert.equal(graph.size({weighted: true}), 3);
+  })
+
   test("#get(id) returns component", function() {
     var graph = Kraken.graph().add("one");
     assert(graph.get("one").node);

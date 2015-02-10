@@ -111,4 +111,8 @@ EdgeSet.prototype.forEach = function(fn, context) {
   return this.edges.forEach(fn, context);
 };
 
+EdgeSet.prototype.reduce = function() {
+  return this.edges.reduce.apply(this.edges, arguments);
+};
+
 module.exports = EdgeIndex;

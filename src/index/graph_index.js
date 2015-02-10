@@ -22,8 +22,21 @@ function Index(graph) {
   this._size = 0;  // number of edges
 }
 
-Index.prototype.order = function() { return this._order; }
-Index.prototype.size = function() { return this._size; }
+Index.prototype.order = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.sum(this.collections.nodes, "weight");
+  } else {
+    return this._order;
+  }
+}
+
+Index.prototype.size = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.sum(this.collections.edges, "weight");
+  } else {
+    return this._size;
+  }
+}
 
 Index.prototype.addNode = function(node) {
   assert(!this.contains(node), "Node already exists, " + node);
