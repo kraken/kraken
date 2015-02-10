@@ -28,6 +28,7 @@ delegateGetter("farness");
 
 // TODO: Make all calculations async
 // graph.calc("degree").then(function(result) { ... })
+// graph.calc("size", {weighted: true}).then(...)
 // graph.calc("rank", "a / b").then(...)
 // graph.calc("rank", fn).then(...)
 //
@@ -46,7 +47,15 @@ exports.calc = function(property, expression) {
 
     if (is.object(expression)) {
       options = expression;
-      property = expression.as;
+
+      // TODO: Do we really want to support this?
+      //
+      //   calc("a / b", {as: "prop"})
+      //
+      // already have
+      //
+      //   calc("prop", "a / b")
+      if (expression.as) property = expression.as;
     }
 
     callback = Metrics[metric];

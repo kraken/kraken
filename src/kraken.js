@@ -147,10 +147,13 @@ Kraken.metrics["reach3"]      = require("./plugins/metrics/reach")(3);
 Kraken.metrics["reach-efficiency"] = delegateMetricToMethod("reachEfficiency")
 
 function delegateMetricToMethod(methodName) {
-  var fn = function(resolve, options) {
+  var fn = function(resolve) {
+    var args = Array.prototype.slice.call(arguments);
+    args.shift(); // remove resolve from args
+
     this.eachNode(function(node) {
       var method = node[methodName];
-      resolve(node, method.call(node));
+      resolve(node, method.apply(node, args));
     });
   };
 
