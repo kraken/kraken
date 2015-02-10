@@ -1,6 +1,7 @@
 var Set = require("collections/set");
 var Entity = require("./entity");
 var Dijkstra = require("../algorithms/dijkstra");
+var GraphHelper = require("../helpers/graph-helper");
 
 function Node(graph, properties) {
   Entity.call(this, graph, properties);
@@ -22,8 +23,9 @@ Node.prototype.connect = function(target, edge) {
 }
 
 // Neighborhood size
-// Returns the number of nodes connected to node plus the node itself
-Node.prototype.size = function() {
+// Returns the number of nodes connected to node plus the node itself.
+// Can be weighted.
+Node.prototype.size = function(options) {
   var nodes = new Set();
 
   this.edges().forEach(function(edge) {
@@ -33,15 +35,24 @@ Node.prototype.size = function() {
 
   nodes.add(this);
 
-  return nodes.length;
+  if (options && options.weighted) {
+    return GraphHelper.weight(nodes);
+  } else {
+    return nodes.length;
+  }
 }
 
 // TODO: insize/outsize
 
 // Neighborhood ties
-// Returns the number of edges for the node
-Node.prototype.ties = function() {
-  return this.graph.getEdgeCountFor(this);
+// Returns the number of edges for the node.
+// Can be weighted.
+Node.prototype.ties = function(options) {
+  if (options && options.weighted) {
+    return GraphHelper.weight(this.edges());
+  } else {
+    return this.graph.getEdgeCountFor(this);
+  }
 }
 
 // Neighborhood pairs
