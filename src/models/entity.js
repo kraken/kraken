@@ -56,14 +56,23 @@ Entity.prototype.prop = function(property, value) {
                                   this.set(property, value);
 }
 
-propertyAccessor("weight");
+// Returns the assigned edge weight or 1 if undefined.
+//
+// TODO: This approach violates the principle of least surprise.
+// Might want to handle this on a case-by-case basis for each algorithm
+// or set as default properties instead.
+//
+// TODO: Consider alternative graph.weight("prop") that can be used to set the
+// property used for edge weights. This method would take that setting into
+// account when determining edge weight.
+propertyAccessor("weight", 1);
 
-function propertyAccessor(prop) {
+function propertyAccessor(prop, defaultValue) {
   Entity.prototype[prop] = function(value) {
     if (arguments.length === 0) {
-      return this.prop(prop);
+      return this.get(prop, defaultValue);
     } else {
-      return this.prop(prop, value);
+      return this.set(prop, value);
     }
   }
 }

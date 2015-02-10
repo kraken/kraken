@@ -32,30 +32,13 @@ Edge.prototype.rebase = function(source, target) {
   return this.graph.rebaseEdge(this, source, target);
 }
 
-// Returns the assigned edge weight or 1 if undefined.
-//
-// TODO: This approach violates the principle of least surprise.
-// Might want to handle this on a case-by-case basis for each algorithm
-// or set as default properties instead.
-//
-// TODO: Consider alternative graph.weight("prop") that can be used to set the
-// property used for edge weights. This method would take that setting into
-// account when determining edge weight.
-Edge.prototype.weight = function(value) {
-  if (arguments.length === 0) {
-    return this.get("weight", 1);
-  } else {
-    return this.set("weight", value);
-  }
-}
-
 // Returns the assigned edge multiplicity or 1 if undefined.
-Edge.prototype.multiplicity = function(value) {
-  if (arguments.length === 0) {
-    return this.get("multiplicity", 1);
-  } else {
-    return this.set("multiplicity", value);
-  }
-}
+// Edge.prototype.multiplicity = function(value) {
+//   if (arguments.length === 0) {
+//     return this.get("multiplicity", 1);
+//   } else {
+//     return this.set("multiplicity", value);
+//   }
+// }
 
 module.exports = Edge;
