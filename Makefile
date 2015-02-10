@@ -7,7 +7,7 @@ test-harmony:
 # 1. npm install -g node-inspector
 # 2. run node-inspector in another console
 debug:
-	mocha --debug --debug-brk --ui tdd --reporter dot 'test/**/*_test.js'
+	mocha --debug --debug-brk --ui tdd --reporter dot 'test/**/*-test.js'
 
 build:
 	browserify src/kraken.js --standalone Kraken > dist/kraken.js
