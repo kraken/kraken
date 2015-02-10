@@ -14,6 +14,7 @@ var Brandes = require("../algorithms/brandes");
 //
 // API
 //  add({node_properties})
+//  add(id, {node_properties})
 //  connect({edge_properties})
 //  insert(node|edge)
 //  remove(node|edge)
@@ -120,11 +121,15 @@ Graph.prototype.eid = function(source, target, properties) {
 
 // Public: Adds the node to the graph.
 // Can be called with single node definition or array of node definitions.
-Graph.prototype.add = function(node) {
+Graph.prototype.add = function(node, properties) {
   if (is.array(node)) {
     var nodes = node;
     for (node in nodes) this.addNode(node);
   } else {
+    if (properties) {
+      properties.id = node;
+      node = properties;
+    }
     this.addNode(node);
   }
 
