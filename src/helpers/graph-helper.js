@@ -1,6 +1,10 @@
 // Not sure where else to put this stuff yet so for now I'm just trying to
 // keep it out of the core.
 var GraphHelper = {
+  weight: function(collection) {
+    return GraphHelper.sum(collection, "weight");
+  },
+
   sum: function(collection, method) {
     return collection.reduce(function(total, model) {
       return total + model[method].call(model);

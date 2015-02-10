@@ -1,3 +1,4 @@
+var is = require("is");
 var Set = require("collections/set");
 var Entity = require("./entity");
 var Dijkstra = require("../algorithms/dijkstra");
@@ -68,29 +69,78 @@ Node.prototype.density = function() {
 }
 
 // Defaults to two-step reach if distance undefined
-Node.prototype.reach = function(distance, reached) {
+// reach(1)
+// reach(1, {nodeWeighted: true})
+// reach(1, {edgeWeighted: true})
+// reach({nodeWeighted: true}) // defaults to two-step
+Node.prototype.reach = function(distance, options, reached) {
+  if (is.object(distance)) {
+    reached = options;
+    options = distance;
+    distance = undefined;
+  }
+
   if (reached) {
-    reached.add(this);
+    reached.nodes.add(this);
 
     if (distance > 0) {
       this.outEdges().forEach(function(edge) {
-        edge.target().reach(distance - 1, reached);
+        reached.edges.add(edge);
+        edge.target().reach(distance - 1, options, reached);
       });
     }
   } else {
-    // Default to two-step reach
-    if (arguments.length === 0) distance = 2;
+    var reach, total;
 
-    reached = new Set();
-    this.reach(distance, reached);
+    // Default to two-step reach
+    if (!is.number(distance)) distance = 2;
+
+    options = options || {};
+
+    reached = {
+      nodes: new Set(),
+      edges: new Set()
+    }
+
+    this.reach(distance, options, reached);
 
     // Percentage of the total network
-    return reached.length / this.graph.order();
+    if (options.nodeWeighted) {
+      reach = GraphHelper.weight(reached.nodes);
+      total = this.graph.order({weighted: true});
+    } else if (options.edgeWeighted) {
+      reach = GraphHelper.weight(reached.edges);
+      total = this.graph.size({weighted: true});
+    } else {
+      reach = reached.nodes.length;
+      total = this.graph.order();
+    }
+
+    return reach / total;
   }
 }
 
-Node.prototype.reachEfficiency = function() {
-  return this.reach(2) / this.size();
+Node.prototype.reachEfficiency = function(distance, options) {
+  var reach, total;
+
+  options = options || {};
+
+  if (is.object(distance)) {
+    options = distance;
+    distance = undefined;
+  }
+
+  reach = this.reach(distance, options);
+
+  if (options.nodeWeighted) {
+    total = this.size({weighted: true});
+  } else if (options.edgeWeighted) {
+    total = this.ties({weighted: true});
+  } else {
+    total = this.size();
+  }
+
+  return reach / total;
 }
 
 // Calculate the harmonic closeness, defined as the sum of the inverted
