@@ -31466,7 +31466,7 @@ module.exports = '1.0.1';
     }
 })(this);
 
-},{"crypto":346}],310:[function(require,module,exports){
+},{"crypto":347}],310:[function(require,module,exports){
 // The Bellman–Ford algorithm computes shortest paths from a single source to
 // all other nodes in a weighted, directed graph.
 
@@ -31512,7 +31512,7 @@ function eachEdge(graph, callback) {
 
 module.exports = BellmanFord;
 
-},{"../models/shortest-path-tree":328}],311:[function(require,module,exports){
+},{"../models/shortest-path-tree":329}],311:[function(require,module,exports){
 var extend = require("extend");
 var ShortestPathTree = require("../models/shortest-path-tree");
 var Heap = require("collections/heap");
@@ -31671,7 +31671,7 @@ function normalize(graph, result) {
 
 module.exports = Brandes;
 
-},{"../lib/progrez":323,"../models/shortest-path-tree":328,"collections/fast-map":2,"collections/heap":8,"extend":24}],312:[function(require,module,exports){
+},{"../lib/progrez":324,"../models/shortest-path-tree":329,"collections/fast-map":2,"collections/heap":8,"extend":24}],312:[function(require,module,exports){
 var Heap = require("collections/heap");
 var ShortestPathTree = require("../models/shortest-path-tree");
 
@@ -31716,7 +31716,7 @@ function Dijkstra(graph, source, shortest) {
 
 module.exports = Dijkstra;
 
-},{"../models/shortest-path-tree":328,"collections/heap":8}],313:[function(require,module,exports){
+},{"../models/shortest-path-tree":329,"collections/heap":8}],313:[function(require,module,exports){
 var uuid = require("../utils").uuid;
 var FastMap = require("collections/fast-map");
 var Dijkstra = require("./dijkstra");
@@ -31763,7 +31763,7 @@ function Johnson(graph) {
 
 module.exports = Johnson;
 
-},{"../models/shortest-path-tree":328,"../utils":338,"./bellman-ford":310,"./dijkstra":312,"collections/fast-map":2}],314:[function(require,module,exports){
+},{"../models/shortest-path-tree":329,"../utils":339,"./bellman-ford":310,"./dijkstra":312,"collections/fast-map":2}],314:[function(require,module,exports){
 var Kraken = require("../kraken");
 
 var map = [].map;
@@ -31847,6 +31847,12 @@ var core = module.exports = {
     });
   },
 
+  edges: function() {
+    return filter.call(this, function(component) {
+      return component.edge;
+    });
+  },
+
   map: function(callback, context) {
     var result = map.call(this, callback, context);
     return this.pushStack(result);
@@ -31887,7 +31893,7 @@ var core = module.exports = {
   }
 }
 
-},{"../kraken":322}],315:[function(require,module,exports){
+},{"../kraken":323}],315:[function(require,module,exports){
 var is = require("is");
 var assert = require("assert");
 var math = require("mathjs");
@@ -31994,7 +32000,7 @@ exports.eval = function(property, callback) {
   return this;
 }
 
-},{"../lib/progrez":323,"../static":337,"assert":339,"is":25,"mathjs":26}],316:[function(require,module,exports){
+},{"../lib/progrez":324,"../static":338,"assert":340,"is":25,"mathjs":26}],316:[function(require,module,exports){
 var is = require("is");
 var assert = require("assert");
 var exports = module.exports = {};
@@ -32101,7 +32107,7 @@ exports.pluck = function(property) {
 
 // exports.normalize = function(property) {}
 
-},{"assert":339,"is":25}],317:[function(require,module,exports){
+},{"assert":340,"is":25}],317:[function(require,module,exports){
 var stats = module.exports = {};
 
 stats.min = function(property) {
@@ -32176,6 +32182,22 @@ var proto = module.exports = {
 };
 
 },{}],319:[function(require,module,exports){
+// TODO: rewrite this with reduce once we added it.
+// Not sure where else to put this stuff yet so for now I'm just trying to
+// keep it out of the core.
+var GraphHelper = {
+  sumEdgeWeights: function(edges) {
+    var sum = 0;
+    edges.forEach(function(edge) {
+      sum += edge.weight();
+    });
+    return sum;
+  }
+}
+
+module.exports = GraphHelper;
+
+},{}],320:[function(require,module,exports){
 var util = require("util");
 
 function Collection() {
@@ -32209,7 +32231,7 @@ Collection.prototype.toArray = function() {
 
 module.exports = Collection;
 
-},{"util":360}],320:[function(require,module,exports){
+},{"util":361}],321:[function(require,module,exports){
 // The goal of this index is to quickly be able to tell if and how two nodes
 // are connected.
 //
@@ -32325,7 +32347,7 @@ EdgeSet.prototype.forEach = function(fn, context) {
 
 module.exports = EdgeIndex;
 
-},{}],321:[function(require,module,exports){
+},{}],322:[function(require,module,exports){
 var is = require("is");
 var assert = require("assert");
 var Set = require("collections/set");
@@ -32334,6 +32356,7 @@ var EdgeIndex = require("./edge_index");
 var ShortestPathTree = require("../models/shortest-path-tree");
 var Johnson = require("../algorithms/johnson");
 var Dijkstra = require("../algorithms/dijkstra");
+var GraphHelper = require("../helpers/graph-helper");
 
 // An Index represents the backbone of a graph.  It stores the graph structure
 // and indexes the contents to enable efficient lookups.
@@ -32462,6 +32485,18 @@ Index.prototype.getOutEdgeCountFor = function(node) {
   return this.edges.from(node).length;
 }
 
+Index.prototype.getWeightedEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.all(node));
+}
+
+Index.prototype.getWeightedInEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.to(node));
+}
+
+Index.prototype.getWeightedOutEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.from(node));
+}
+
 Index.prototype.getNeighbors = function(node) {
   return [];
 }
@@ -32521,7 +32556,7 @@ Index.prototype.getEntitiesByTarget = function(target) {}
 
 module.exports = Index;
 
-},{"../algorithms/dijkstra":312,"../algorithms/johnson":313,"../models/shortest-path-tree":328,"./collection":319,"./edge_index":320,"assert":339,"collections/set":15,"is":25}],322:[function(require,module,exports){
+},{"../algorithms/dijkstra":312,"../algorithms/johnson":313,"../helpers/graph-helper":319,"../models/shortest-path-tree":329,"./collection":320,"./edge_index":321,"assert":340,"collections/set":15,"is":25}],323:[function(require,module,exports){
 // Inspired by jquery's wrapped set model
 //
 // http://www.keyframesandcode.com/resources/javascript/deconstructed/jquery/
@@ -32653,10 +32688,6 @@ Kraken.register("format", "JSON", require("./plugins/formats/json"));
 // Kraken.register("graph:degree")
 
 // Require core metrics
-
-// require("./metrics/reach")(metric);
-// function metric(name) {}
-
 Kraken.metrics["size"]        = delegateMetricToMethod("size");
 Kraken.metrics["ties"]        = delegateMetricToMethod("ties");
 Kraken.metrics["pairs"]       = delegateMetricToMethod("pairs");
@@ -32692,7 +32723,7 @@ function delegateMetricToMethod(methodName) {
 
 module.exports = Kraken;
 
-},{"./api/core":314,"./api/metrics":315,"./api/properties":316,"./api/statistics":317,"./api/traversal":318,"./models/entity":325,"./models/graph":326,"./plugins/formats/json":330,"./plugins/graph/components":331,"./plugins/metrics/betweenness":332,"./plugins/metrics/eigenvector":333,"./plugins/metrics/reach":334,"./plugins/register":335,"./static":337,"./utils":338,"extend":24,"is":25}],323:[function(require,module,exports){
+},{"./api/core":314,"./api/metrics":315,"./api/properties":316,"./api/statistics":317,"./api/traversal":318,"./models/entity":326,"./models/graph":327,"./plugins/formats/json":331,"./plugins/graph/components":332,"./plugins/metrics/betweenness":333,"./plugins/metrics/eigenvector":334,"./plugins/metrics/reach":335,"./plugins/register":336,"./static":338,"./utils":339,"extend":24,"is":25}],324:[function(require,module,exports){
 function Progrez() {
   if (!(this instanceof Progrez)) return new Progrez();
 
@@ -32734,7 +32765,7 @@ Progrez.prototype.auto = function() {
 
 module.exports = Progrez;
 
-},{}],324:[function(require,module,exports){
+},{}],325:[function(require,module,exports){
 var Entity = require("./entity");
 
 // We intentionally do not store source and target on the edge itself to
@@ -32797,7 +32828,7 @@ Edge.prototype.multiplicity = function(value) {
 
 module.exports = Edge;
 
-},{"./entity":325}],325:[function(require,module,exports){
+},{"./entity":326}],326:[function(require,module,exports){
 var is = require("is");
 var assert = require("assert");
 var Graph = require("./graph");
@@ -32870,7 +32901,7 @@ function propertyAccessor(prop) {
 
 module.exports = Entity;
 
-},{"./graph":326,"assert":339,"is":25}],326:[function(require,module,exports){
+},{"./graph":327,"assert":340,"is":25}],327:[function(require,module,exports){
 
 var is = require("is");
 var assert = require("assert");
@@ -33162,6 +33193,9 @@ delegate(Graph.prototype, "index")
   .method("getInEdgeCountFor")
   .method("getOutEdgesFor")
   .method("getOutEdgeCountFor")
+  .method("getWeightedEdgeCountFor")
+  .method("getWeightedInEdgeCountFor")
+  .method("getWeightedOutEdgeCountFor")
   .method("getDistance")
   .method("getEntityById")
   .method("getEntities")
@@ -33176,7 +33210,7 @@ delegate(Graph.prototype, "index")
 
 module.exports = Graph;
 
-},{"../algorithms/brandes":311,"../index/graph_index":321,"../utils":338,"./edge":324,"./node":327,"assert":339,"collections/set":15,"delegates":23,"events":356,"is":25}],327:[function(require,module,exports){
+},{"../algorithms/brandes":311,"../index/graph_index":322,"../utils":339,"./edge":325,"./node":328,"assert":340,"collections/set":15,"delegates":23,"events":357,"is":25}],328:[function(require,module,exports){
 var Set = require("collections/set");
 var Entity = require("./entity");
 var Dijkstra = require("../algorithms/dijkstra");
@@ -33334,21 +33368,29 @@ Node.prototype.inNeighborCount = function() {
   return this.graph.getInNeighborCount(this);
 }
 
-Node.prototype.degree = function() {
+Node.prototype.getEdgeCount = function() {
   return this.graph.getEdgeCountFor(this);
 }
-Node.prototype.getEdgeCount = Node.prototype.degree;
 
-Node.prototype.indegree = function() {
+Node.prototype.getInEdgeCount = function() {
   return this.graph.getInEdgeCountFor(this);
 }
-Node.prototype.getInEdgeCount = Node.prototype.indegree;
 
-Node.prototype.outdegree = function() {
+Node.prototype.getOutEdgeCount = function() {
   return this.graph.getOutEdgeCountFor(this);
 }
-Node.prototype.getOutEdgeCount = Node.prototype.outdegree;
 
+Node.prototype.degree = function() {
+  return this.graph.getWeightedEdgeCountFor(this);
+}
+
+Node.prototype.indegree = function() {
+  return this.graph.getWeightedInEdgeCountFor(this);
+}
+
+Node.prototype.outdegree = function() {
+  return this.graph.getWeightedOutEdgeCountFor(this);
+}
 
 // return this.graph.find(":edges", this).filter(filter);
 Node.prototype.edges = function() {
@@ -33382,7 +33424,7 @@ Node.prototype.out = Node.prototype.outEdges;
 
 module.exports = Node;
 
-},{"../algorithms/dijkstra":312,"./entity":325,"collections/set":15}],328:[function(require,module,exports){
+},{"../algorithms/dijkstra":312,"./entity":326,"collections/set":15}],329:[function(require,module,exports){
 var FastMap = require("collections/fast-map");
 
 function ShortestPathTree() {
@@ -33447,7 +33489,7 @@ function accessor(name) {
 
 module.exports = ShortestPathTree;
 
-},{"collections/fast-map":2}],329:[function(require,module,exports){
+},{"collections/fast-map":2}],330:[function(require,module,exports){
 // https://github.com/networkx/networkx/blob/master/networkx/algorithms/components/connected.py
 // https://github.com/networkx/networkx/blob/master/networkx/algorithms/shortest_paths/generic.py
 
@@ -33473,7 +33515,7 @@ module.exports = ShortestPathTree;
 
 // }
 
-},{}],330:[function(require,module,exports){
+},{}],331:[function(require,module,exports){
 // parse?
 var format = {
   accept: function(data) {
@@ -33497,14 +33539,14 @@ var format = {
 
 module.exports = format;
 
-},{}],331:[function(require,module,exports){
+},{}],332:[function(require,module,exports){
 var connected = require("../algorithms/components/connected");
 
 module.exports = function() {
   return connected(this);
 };
 
-},{"../algorithms/components/connected":329}],332:[function(require,module,exports){
+},{"../algorithms/components/connected":330}],333:[function(require,module,exports){
 // TODO: Custom progress handling since the resolve approach won't cut it
 var fn = function(resolve, options) {
   var betweenness;
@@ -33525,7 +33567,7 @@ var fn = function(resolve, options) {
 
 module.exports = fn;
 
-},{}],333:[function(require,module,exports){
+},{}],334:[function(require,module,exports){
 var MAX_ITERATIONS = 100;
 
 var eigenvectorCentrality = function(resolve, options) {
@@ -33568,7 +33610,7 @@ var eigenvectorCentrality = function(resolve, options) {
 
 module.exports = eigenvectorCentrality;
 
-},{}],334:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 var fn = function(degree) {
   return function(resolve, options) {
     this.eachNode(function(node) {
@@ -33583,7 +33625,7 @@ fn.total = function() {
 
 module.exports = fn;
 
-},{}],335:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 var Graph = require("../models/graph");
 var slice = Array.prototype.slice;
 
@@ -33616,7 +33658,7 @@ function unsupportedOperation() {
 
 module.exports = register;
 
-},{"../models/graph":326}],336:[function(require,module,exports){
+},{"../models/graph":327}],337:[function(require,module,exports){
 // *
 // node
 // edge
@@ -33651,13 +33693,13 @@ function select(context, selector) {
 
 module.exports = select;
 
-},{"../static":337}],337:[function(require,module,exports){
+},{"../static":338}],338:[function(require,module,exports){
 exports.metrics = {};
 exports.selectors = {};
 exports.operators = {};
 exports.select = require("./query/select");
 
-},{"./query/select":336}],338:[function(require,module,exports){
+},{"./query/select":337}],339:[function(require,module,exports){
 var is = require("is");
 var cuid = require("cuid");
 
@@ -33712,7 +33754,7 @@ exports.range = function(a, b) {
   return range;
 }
 
-},{"cuid":22,"is":25}],339:[function(require,module,exports){
+},{"cuid":22,"is":25}],340:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -34074,7 +34116,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-},{"util/":360}],340:[function(require,module,exports){
+},{"util/":361}],341:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -35245,7 +35287,7 @@ function assert (test, message) {
   if (!test) throw new Error(message || 'Failed assertion')
 }
 
-},{"base64-js":341,"ieee754":342}],341:[function(require,module,exports){
+},{"base64-js":342,"ieee754":343}],342:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -35367,7 +35409,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],342:[function(require,module,exports){
+},{}],343:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -35453,7 +35495,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],343:[function(require,module,exports){
+},{}],344:[function(require,module,exports){
 (function (Buffer){
 var createHash = require('sha.js')
 
@@ -35487,7 +35529,7 @@ module.exports = function (alg) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./md5":347,"buffer":340,"ripemd160":348,"sha.js":350}],344:[function(require,module,exports){
+},{"./md5":348,"buffer":341,"ripemd160":349,"sha.js":351}],345:[function(require,module,exports){
 (function (Buffer){
 var createHash = require('./create-hash')
 
@@ -35532,7 +35574,7 @@ Hmac.prototype.digest = function (enc) {
 
 
 }).call(this,require("buffer").Buffer)
-},{"./create-hash":343,"buffer":340}],345:[function(require,module,exports){
+},{"./create-hash":344,"buffer":341}],346:[function(require,module,exports){
 (function (Buffer){
 var intSize = 4;
 var zeroBuffer = new Buffer(intSize); zeroBuffer.fill(0);
@@ -35570,7 +35612,7 @@ function hash(buf, fn, hashSize, bigEndian) {
 module.exports = { hash: hash };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":340}],346:[function(require,module,exports){
+},{"buffer":341}],347:[function(require,module,exports){
 (function (Buffer){
 var rng = require('./rng')
 
@@ -35628,7 +35670,7 @@ each(['createCredentials'
 })
 
 }).call(this,require("buffer").Buffer)
-},{"./create-hash":343,"./create-hmac":344,"./pbkdf2":354,"./rng":355,"buffer":340}],347:[function(require,module,exports){
+},{"./create-hash":344,"./create-hmac":345,"./pbkdf2":355,"./rng":356,"buffer":341}],348:[function(require,module,exports){
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
  * Digest Algorithm, as defined in RFC 1321.
@@ -35785,7 +35827,7 @@ module.exports = function md5(buf) {
   return helpers.hash(buf, core_md5, 16);
 };
 
-},{"./helpers":345}],348:[function(require,module,exports){
+},{"./helpers":346}],349:[function(require,module,exports){
 (function (Buffer){
 
 module.exports = ripemd160
@@ -35994,7 +36036,7 @@ function ripemd160(message) {
 
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":340}],349:[function(require,module,exports){
+},{"buffer":341}],350:[function(require,module,exports){
 var u = require('./util')
 var write = u.write
 var fill = u.zeroFill
@@ -36094,7 +36136,7 @@ module.exports = function (Buffer) {
   return Hash
 }
 
-},{"./util":353}],350:[function(require,module,exports){
+},{"./util":354}],351:[function(require,module,exports){
 var exports = module.exports = function (alg) {
   var Alg = exports[alg]
   if(!Alg) throw new Error(alg + ' is not supported (we accept pull requests)')
@@ -36108,7 +36150,7 @@ exports.sha =
 exports.sha1 = require('./sha1')(Buffer, Hash)
 exports.sha256 = require('./sha256')(Buffer, Hash)
 
-},{"./hash":349,"./sha1":351,"./sha256":352,"buffer":340}],351:[function(require,module,exports){
+},{"./hash":350,"./sha1":352,"./sha256":353,"buffer":341}],352:[function(require,module,exports){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
  * in FIPS PUB 180-1
@@ -36269,7 +36311,7 @@ module.exports = function (Buffer, Hash) {
   return Sha1
 }
 
-},{"util":360}],352:[function(require,module,exports){
+},{"util":361}],353:[function(require,module,exports){
 
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -36434,7 +36476,7 @@ module.exports = function (Buffer, Hash) {
 
 }
 
-},{"./util":353,"util":360}],353:[function(require,module,exports){
+},{"./util":354,"util":361}],354:[function(require,module,exports){
 exports.write = write
 exports.zeroFill = zeroFill
 
@@ -36472,7 +36514,7 @@ function zeroFill(buf, from) {
 }
 
 
-},{}],354:[function(require,module,exports){
+},{}],355:[function(require,module,exports){
 (function (Buffer){
 // JavaScript PBKDF2 Implementation
 // Based on http://git.io/qsv2zw
@@ -36558,7 +36600,7 @@ module.exports = function (createHmac, exports) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":340}],355:[function(require,module,exports){
+},{"buffer":341}],356:[function(require,module,exports){
 (function (Buffer){
 (function() {
   module.exports = function(size) {
@@ -36572,7 +36614,7 @@ module.exports = function (createHmac, exports) {
 }())
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":340}],356:[function(require,module,exports){
+},{"buffer":341}],357:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -36875,7 +36917,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],357:[function(require,module,exports){
+},{}],358:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -36900,7 +36942,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],358:[function(require,module,exports){
+},{}],359:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -36965,14 +37007,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],359:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],360:[function(require,module,exports){
+},{}],361:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -37562,5 +37604,5 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":359,"_process":358,"inherits":357}]},{},[322])(322)
+},{"./support/isBuffer":360,"_process":359,"inherits":358}]},{},[323])(323)
 });
