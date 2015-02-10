@@ -136,15 +136,15 @@ Index.prototype.getOutEdgeCountFor = function(node) {
 }
 
 Index.prototype.getWeightedEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.all(node));
+  return GraphHelper.sum(this.edges.all(node), "weight");
 }
 
 Index.prototype.getWeightedInEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.to(node));
+  return GraphHelper.sum(this.edges.to(node), "weight");
 }
 
 Index.prototype.getWeightedOutEdgeCountFor = function(node) {
-  return GraphHelper.sumEdgeWeights(this.edges.from(node));
+  return GraphHelper.sum(this.edges.from(node), "weight");
 }
 
 Index.prototype.getNeighbors = function(node) {
