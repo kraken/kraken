@@ -155,21 +155,29 @@ Node.prototype.inNeighborCount = function() {
   return this.graph.getInNeighborCount(this);
 }
 
-Node.prototype.degree = function() {
+Node.prototype.getEdgeCount = function() {
   return this.graph.getEdgeCountFor(this);
 }
-Node.prototype.getEdgeCount = Node.prototype.degree;
 
-Node.prototype.indegree = function() {
+Node.prototype.getInEdgeCount = function() {
   return this.graph.getInEdgeCountFor(this);
 }
-Node.prototype.getInEdgeCount = Node.prototype.indegree;
 
-Node.prototype.outdegree = function() {
+Node.prototype.getOutEdgeCount = function() {
   return this.graph.getOutEdgeCountFor(this);
 }
-Node.prototype.getOutEdgeCount = Node.prototype.outdegree;
 
+Node.prototype.degree = function() {
+  return this.graph.getWeightedEdgeCountFor(this);
+}
+
+Node.prototype.indegree = function() {
+  return this.graph.getWeightedInEdgeCountFor(this);
+}
+
+Node.prototype.outdegree = function() {
+  return this.graph.getWeightedOutEdgeCountFor(this);
+}
 
 // return this.graph.find(":edges", this).filter(filter);
 Node.prototype.edges = function() {

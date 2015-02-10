@@ -6,6 +6,7 @@ var EdgeIndex = require("./edge_index");
 var ShortestPathTree = require("../models/shortest-path-tree");
 var Johnson = require("../algorithms/johnson");
 var Dijkstra = require("../algorithms/dijkstra");
+var GraphHelper = require("../helpers/graph-helper");
 
 // An Index represents the backbone of a graph.  It stores the graph structure
 // and indexes the contents to enable efficient lookups.
@@ -132,6 +133,18 @@ Index.prototype.getInEdgeCountFor = function(node) {
 
 Index.prototype.getOutEdgeCountFor = function(node) {
   return this.edges.from(node).length;
+}
+
+Index.prototype.getWeightedEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.all(node));
+}
+
+Index.prototype.getWeightedInEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.to(node));
+}
+
+Index.prototype.getWeightedOutEdgeCountFor = function(node) {
+  return GraphHelper.sumEdgeWeights(this.edges.from(node));
 }
 
 Index.prototype.getNeighbors = function(node) {
