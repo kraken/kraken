@@ -33710,7 +33710,7 @@ module.exports = eigenvectorCentrality;
 var fn = function(degree) {
   return function(resolve, options) {
     this.eachNode(function(node) {
-      resolve(node, node.reach(degree));
+      resolve(node, node.reach(degree, options));
     });
   };
 };
