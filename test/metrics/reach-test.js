@@ -26,6 +26,21 @@ suite("metrics", function() {
       assert.equal(c.reach(), 1/4);
     })
 
+    // weighted order = 4.5
+    test.only("metric", function() {
+      var graph = Kraken()
+        .add({id: "a", weight: 2})
+        .add({id: "b", weight: 0.5})
+        .add({id: "c"})
+        .add({id: "d"})
+        .connect("a", "b")
+        .connect("b", "c")
+        .connect("c", "d")
+        .calc("reach", {nodeWeighted: true});
+
+      assert.deepEqual(graph.collect("reach"), {a: 3.5/4.5, b: 2.5/4.5, c: 2/4.5, d: 1/4.5});
+    })
+
     // weighted order = 7
     test("node weighted", function() {
       var graph = Kraken()
