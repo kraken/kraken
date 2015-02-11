@@ -33267,32 +33267,34 @@ Node.prototype.connect = function(target, edge) {
 // Returns the number of nodes connected to node plus the node itself.
 // Can be weighted.
 Node.prototype.size = function(options) {
-  var nodes = new Set();
-
-  this.edges().forEach(function(edge) {
-    nodes.add(edge.source());
-    nodes.add(edge.target());
-  });
-
-  nodes.add(this);
+  var neighbors = this.neighbors();
 
   if (options && options.weighted) {
-    return GraphHelper.weight(nodes);
+    return GraphHelper.weight(neighbors);
   } else {
-    return nodes.length;
+    return neighbors.length;
   }
 }
 
 // TODO: insize/outsize
 
 // Neighborhood ties
-// Returns the number of edges for the node.
+// Returns the total number of edges within a node's immediate network.
 // Can be weighted.
 Node.prototype.ties = function(options) {
+  var edges = new Set();
+  var neighbors = this.neighbors();
+
+  neighbors.forEach(function(source) {
+    source.outEdges().forEach(function(edge) {
+      if (neighbors.has(edge.target())) edges.add(edge);
+    });
+  });
+
   if (options && options.weighted) {
-    return GraphHelper.weight(this.edges());
+    return GraphHelper.weight(edges);
   } else {
-    return this.graph.getEdgeCountFor(this);
+    return edges.length;
   }
 }
 
@@ -33427,6 +33429,8 @@ Node.prototype.distanceFrom = function(node) {
   return this.graph.getDistance(node, this);
 }
 
+// TODO: should this always include the element itself or is that a
+// separate concern for Node#size ?
 Node.prototype.neighbors = function() {
   var nodes = new Set();
 
@@ -33437,7 +33441,7 @@ Node.prototype.neighbors = function() {
 
   nodes.add(this);
 
-  return nodes.length;
+  return nodes;
 }
 
 Node.prototype.outNeighbors = function() {
@@ -33496,6 +33500,10 @@ Node.prototype.outEdges = function() {
 // Node.prototype.outEdges = function() {
 //   return this.graph.find(":out-edges", this).filter(filter);
 // }
+
+Node.prototype.hasEdge = function(node) {
+  return this.hasEdgeTo(node) || this.hasEdgeFrom(node);
+}
 
 Node.prototype.hasEdgeTo = function(node) {
   return this.graph.hasEdgeBetween(this, node);
