@@ -18,19 +18,21 @@
     }
   ],
   "scripts": {
-    "test": "mocha --ui tdd --reporter dot 'test/**/*-test.js'"
+    "test": "mocha --compilers js:babel/register --ui tdd --reporter dot 'test/**/*-test.js'"
   },
   "devDependencies": {
+    "babel": "^5.8.21",
     "gulp": "^3.6.2",
     "gulp-browserify": "~0.5.0",
     "mocha": "~1.20.0"
   },
   "dependencies": {
+    "array-shuffle": "^1.0.0",
     "collections": "~1.2.1",
+    "cuid": "~1.2.4",
     "delegates": "0.0.3",
     "extend": "^1.2.1",
     "is": "^0.3.0",
-    "mathjs": "~1.0.1",
-    "cuid": "~1.2.4"
+    "mathjs": "~1.0.1"
   }
 }

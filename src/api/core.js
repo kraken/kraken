@@ -54,6 +54,8 @@ var core = module.exports = {
     // return this.pushStack(a, "slice", b);
   },
 
+  // forEach alias, feels more natural when you're also using eachNode /
+  // eachEdge
   each: function(callback, context) {
     forEach.call(this, callback); // context?
     return this;

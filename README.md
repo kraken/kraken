@@ -68,6 +68,11 @@ Graph:
 Selection API:
 (Subset of the graph api?)
 
+TODO:
+- [ ] can we just store properties directly on the entity? use symbols / getters
+      for the core properties? if we can't do that I think we either stick
+      with the backbone get/set or jquery's attr approach
+
 ## License
 
 Was hoping to release this under MIT but pretty sure a couple of the dependencies

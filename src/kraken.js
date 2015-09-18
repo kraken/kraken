@@ -118,8 +118,14 @@ Kraken.graph    = function(data) { return new Graph(data); };
 // Require core graph plugins
 Graph.prototype.components = require("./plugins/graph/components");
 
+// TODO: not sure if this belongs on Graph or Kraken. We also need a much
+// cleaner way of attaching these algorithms to the API.
+var SLPA = require("./algorithms/community-slpa");
+Graph.prototype.communities = function(options) { return SLPA(this, options); };
+
 // Require core formats
 Kraken.register("format", "JSON", require("./plugins/formats/json"));
+
 
 // TODO: Need a better way of defining metrics so they're added to the
 // graph, the entity, and the selection.

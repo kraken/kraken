@@ -250,16 +250,14 @@ Node.prototype.edges = function() {
 }
 
 Node.prototype.outEdges = function() {
+  // return this.graph.find(":out-edges", this).filter(filter);
   return this.graph.getOutEdgesFor(this);
 }
 
-// Node.prototype.inEdges = function() {
-//   return this.graph.find(":in-edges", this).filter(filter);
-// }
-
-// Node.prototype.outEdges = function() {
-//   return this.graph.find(":out-edges", this).filter(filter);
-// }
+Node.prototype.inEdges = function() {
+  // return this.graph.find(":in-edges", this).filter(filter);
+  return this.graph.getInEdgesFor(this);
+}
 
 Node.prototype.hasEdge = function(node) {
   return this.hasEdgeTo(node) || this.hasEdgeFrom(node);
