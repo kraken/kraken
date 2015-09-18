@@ -36,11 +36,6 @@ function slpa(graph, options) {
   // works with collections.
   var nodes = graph.nodes().toArray();
 
-  // Remove disconnected nodes since they have no one to suggest / select with
-  nodes = nodes.filter(function(node) {
-    return node.getEdgeCount() > 0;
-  });
-
   nodes.forEach(function(node, i) {
     var community = node.prop("community") || (i + 1); // uuid()
     var memory = memories[node.id] = createMemoryStore();
@@ -53,20 +48,8 @@ function slpa(graph, options) {
   //
   // (This is the "speaking rule" in the classic sense)
   function suggestCommunity(node) {
-    var community;
-    var memory = memories[node.id];
-
-    // TODO: Not sure how to efficiently sample our structure with
-    // "probability proportional to frequency" but I think this works. Pretty
-    // sure this unfairly favors the earlier communities in the list and
-    // possibly the last one which has a 100% of being selected if it is
-    // ever reached.
-    for (community in memory.communities) {
-      var count = memory.communities[community];
-      var frequency = count / memory.size;
-      if (Math.random() <= frequency) break;
-    }
-
+    var history = memories[node.id].history;
+    var community = history[Math.floor(Math.random() * history.length)];
     return community;
   }
 
@@ -109,7 +92,6 @@ function slpa(graph, options) {
     var memory = memories[node.id];
     var communities = result[node.id] = {};
 
-    // TODO: not sure if our probability calculation is right here
     for (var community in memory.communities) {
       var count = memory.communities[community];
       var probability = count / memory.size;
@@ -128,6 +110,9 @@ function slpa(graph, options) {
   // communities, and the most popular community seen so far.
   function addCommunity(memory, community) {
     var count = memory.communities[community] || 0;
+
+    // Add the community to the selection history
+    memory.history.push(community);
 
     // Increment the count for this community
     memory.communities[community] = ++count;
@@ -153,6 +138,7 @@ function slpa(graph, options) {
 
   function createMemoryStore() {
     return {
+      history: [],              // history of all selections made so far
       communities: {},          // map of community names to counts
       communityCount: 0,        // total number of communities (unique)
       size: 0,                  // total number of community references (non-unique)

@@ -31699,26 +31699,18 @@ module.exports = Brandes;
 // http://arxiv.org/pdf/1109.5720v3.pdf but uses suggest / select
 // terminology instead.
 //
-// TODO: Not sure if we want to return the probability or just a normalized
-// community total.
-//
-// TODO: fuzzy vs crisp
-// TODO: remove nested communities
-//
 // This algorithm returns a map of <node id, <community, probability>>
 //   eg. {"node1" => {"community1" => 0.1, "community2" => 0.5}}
 //
-// TODO: if r is not given, return strength of community associations
-// (fuzzy communities detection). Otherwise just return yes or no
-// (binary or crisp communities detection).
 //
-// http://arxiv.org/pdf/1109.5720.pdf
+// Resources
 //
+// http://arxiv.org/pdf/1109.5720v3.pdf
 // http://www.cs.rpi.edu/~xiej2/Publication/SLPA_PAKDD.pdf (p3)
 // http://toreopsahl.com/datasets/ (p10 for high school network)
+// http://onlinelibrary.wiley.com/doi/10.1002/wics.1319/epdf
 //
-// (from http://onlinelibrary.wiley.com/doi/10.1002/wics.1319/epdf)
-//
+// TODO: remove nested communities
 
 var shuffle = require("array-shuffle");
 
@@ -31740,11 +31732,6 @@ function slpa(graph, options) {
   // works with collections.
   var nodes = graph.nodes().toArray();
 
-  // Remove disconnected nodes since they have no one to suggest / select with
-  nodes = nodes.filter(function(node) {
-    return node.getEdgeCount() > 0;
-  });
-
   nodes.forEach(function(node, i) {
     var community = node.prop("community") || (i + 1); // uuid()
     var memory = memories[node.id] = createMemoryStore();
@@ -31757,17 +31744,8 @@ function slpa(graph, options) {
   //
   // (This is the "speaking rule" in the classic sense)
   function suggestCommunity(node) {
-    var community;
-    var memory = memories[node.id];
-
-    // TODO: not exactly sure how to efficiently sample our structure with
-    // "probability proportional to frequency" but I think this works.
-    for (community in memory.communities) {
-      var count = memory.communities[community];
-      var frequency = count / memory.size;
-      if (Math.random() <= frequency) break;
-    }
-
+    var history = memories[node.id].history;
+    var community = history[Math.floor(Math.random() * history.length)];
     return community;
   }
 
@@ -31810,7 +31788,6 @@ function slpa(graph, options) {
     var memory = memories[node.id];
     var communities = result[node.id] = {};
 
-    // TODO: not sure if our probability calculation is right here
     for (var community in memory.communities) {
       var count = memory.communities[community];
       var probability = count / memory.size;
@@ -31829,6 +31806,9 @@ function slpa(graph, options) {
   // communities, and the most popular community seen so far.
   function addCommunity(memory, community) {
     var count = memory.communities[community] || 0;
+
+    // Add the community to the selection history
+    memory.history.push(community);
 
     // Increment the count for this community
     memory.communities[community] = ++count;
@@ -31854,6 +31834,7 @@ function slpa(graph, options) {
 
   function createMemoryStore() {
     return {
+      history: [],              // history of all selections made so far
       communities: {},          // map of community names to counts
       communityCount: 0,        // total number of communities (unique)
       size: 0,                  // total number of community references (non-unique)
